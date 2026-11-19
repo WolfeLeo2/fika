@@ -1,0 +1,4 @@
+<resources>
+    <!-- Window theme only (Compose draws everything). Material parent because the Navigation SDK's views inflate Material/AppCompat widgets. -->
+    <style name="Theme.Fika" parent="Theme.Material3.DayNight.NoActionBar" />
+</resources>

@@ -56,31 +56,38 @@ created ─▶ assigned ─▶ picked_up ─▶ on_the_way ─▶ delivered
    └──────────────(owner cancels any time before delivered)──────────▶ cancelled
 ```
 
-- **Returned** (rider, from `on_the_way` only): the customer couldn't pay or refused the items, and the rider is bringing them back. Terminal for the rider. The owner confirms on the dashboard that the items are back (`return_received_at`). To try again, the owner creates a new order (one tap, *Send again*, prefilled from the returned one).
+- **Returned** (rider, from `on_the_way` only): the customer couldn't pay or refused the items, and the rider is bringing them back. Terminal for the rider. The owner confirms on the dashboard that the items are back (`return_received_at`). To try again, the owner creates a new order (one tap, _Send again_, prefilled from the returned one).
 - If the customer can't pay but keeps the items, the order is `delivered` with `payment_status = unpaid` and an `unpaid_reason` instead. The rider asks the owner which one applies.
 
 Separate from status:
+
 - **Location**: `location_confirmed_at` set when the customer, owner or rider provides a pin.
 - **Payment**: `payment_mode` (`prepaid` | `pay_on_delivery`), `payment_status` (`unpaid` | `paid`), and for pay-on-delivery orders `payment_method` (`cash` | `mpesa`) with an optional `mpesa_code` the rider records.
-- **Link sent**: `link_sent_at` set when the owner taps *Send on WhatsApp*.
+- **Link sent**: `link_sent_at` set when the owner taps _Send on WhatsApp_.
 
 ## 7. Features
 
 ### 7.1 Platform landing `/`
+
 - What it is ("Live delivery tracking for your shop"), how it works in three steps, sign up and sign in buttons. Prerendered.
 
 ### 7.2 Sign up `/signup`
+
 Two short steps on one page:
+
 1. **You:** full name, email, phone, password. Email is verified with a link before the dashboard opens.
 2. **Your shop:** shop name, web address (slug auto-suggested from the name, editable, live availability check against existing and reserved slugs), town, shop phone/WhatsApp.
 
 On submit: create the auth user, then the `create_tenant` RPC creates the tenant (`pending`, with a generated `shop_code`) and an `owner` membership. The owner lands on the dashboard with the setup checklist and a "We're reviewing your shop" banner.
 
 ### 7.3 Sign in `/login`
+
 Email + password, "Forgot password?" (Supabase reset email), link to sign up. After sign-in: one shop → its dashboard; several → shop picker. Rider accounts are refused here with "Riders use the Fika Rider app".
 
 ### 7.4 First-run setup checklist (dashboard)
+
 Shown on Today until done or dismissed:
+
 1. Add your M-Pesa till or paybill number.
 2. Add your shop phone and WhatsApp number (prefilled from sign-up).
 3. Add your first rider.
@@ -88,6 +95,7 @@ Shown on Today until done or dismissed:
 5. Send your first delivery (enabled once the shop is approved).
 
 ### 7.5 Shop settings `/app/settings`
+
 - Shop name, web address (slug; warns that old links keep working), town, phone, WhatsApp.
 - Payment: M-Pesa till or paybill (+ account number), shown on tracking pages and to riders.
 - Logo (Supabase Storage, square, max 1 MB).
@@ -97,46 +105,52 @@ Shown on Today until done or dismissed:
 - Usage this month vs cap.
 
 ### 7.6 Shop page `/{shop}`
+
 The per-shop public page (formerly the single landing page): logo or name, short line, WhatsApp and call buttons, "Tracking an order? Open the link we sent you", how delivery works, till number. Small "Powered by Fika" footer.
 
 ### 7.7 Tracking page `/{shop}/t/{token}`
 
 Branded with the shop's name and logo. States, driven by the `track` response:
 
-| State | Shows |
-| --- | --- |
-| Invalid or unknown token | "We couldn't find this delivery." Shop contact button if the shop is known |
-| Shop suspended | "This delivery link isn't available. Contact the shop." |
-| Needs location (`location_confirmed_at` null, before `on_the_way`) | Location step (below) |
-| Confirmed, waiting | Progress tracker, "We're getting your order ready", saved spot with *Change* |
-| Assigned / picked up | Rider first name, "will set off soon" |
-| On the way | Live map with rider and destination, ETA, distance, call rider, last-updated time |
-| Any state, pay on delivery and unpaid | Payment card: amount and the shop's till/paybill, cash also fine |
-| Delivered | Success state and receipt, no map, no rider location. After 24 h: completed state with no personal data |
-| Cancelled | "This delivery was cancelled. Contact the shop." |
-| Returned | "This delivery couldn't be completed. Contact the shop." No map, no rider location |
+| State                                                              | Shows                                                                                                   |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| Invalid or unknown token                                           | "We couldn't find this delivery." Shop contact button if the shop is known                              |
+| Shop suspended                                                     | "This delivery link isn't available. Contact the shop."                                                 |
+| Needs location (`location_confirmed_at` null, before `on_the_way`) | Location step (below)                                                                                   |
+| Confirmed, waiting                                                 | Progress tracker, "We're getting your order ready", saved spot with _Change_                            |
+| Assigned / picked up                                               | Rider first name, "will set off soon"                                                                   |
+| On the way                                                         | Live map with rider and destination, ETA, distance, call rider, last-updated time                       |
+| Any state, pay on delivery and unpaid                              | Payment card: amount and the shop's till/paybill, cash also fine                                        |
+| Delivered                                                          | Success state and receipt, no map, no rider location. After 24 h: completed state with no personal data |
+| Cancelled                                                          | "This delivery was cancelled. Contact the shop."                                                        |
+| Returned                                                           | "This delivery couldn't be completed. Contact the shop." No map, no rider location                      |
 
 **Location step:** **Use my current location** → map with the pin → **Deliver here**; or choose on the map with search (Mapbox geocoding biased to the shop's town); optional landmark note (140 chars); allowed until `on_the_way`. Saved location is offered first for returning customers.
 
 Other: polls `track` every 10 s while visible; map loads only when needed; rider's phone only while `on_the_way`, shop phone otherwise; `noindex`.
 
 ### 7.8 Owner dashboard `/app`
+
 Same as the single-shop design, scoped to the selected shop:
+
 - **Today:** needs attention (no location, link not sent, returned with items still with the rider), in-progress table with inline rider assignment, delivered today, live riders map, counts.
 - **New order:** phone lookup prefills returning customers, items, payment mode and amount, location (saved / customer pins / paste link / pick on map), rider, delivery notes; **Save and send on WhatsApp** using the shop's template.
-- **Order detail:** status, actions (copy link, resend, cancel, mark paid, reassign until `on_the_way`; for returned orders: *Items received* and *Send again*), map, cards, timeline from `order_events`. Returned orders show the rider's `return_reason`.
+- **Order detail:** status, actions (copy link, resend, cancel, mark paid, reassign until `on_the_way`; for returned orders: _Items received_ and _Send again_), map, cards, timeline from `order_events`. Returned orders show the rider's `return_reason`.
 - **Payments:** cash with riders (mark received), M-Pesa to check against the till statement, delivered but unpaid, returned (items not yet received).
 - **Riders:** list, status, today's count, cash held; add rider (PIN shown once), reset PIN, deactivate/reactivate. Deactivating also bans the rider's auth user, so the app shows "Your rider account is turned off" instead of a wrong-PIN error and existing sessions stop refreshing. The add-rider panel shows the shop code to give the rider.
 - **Customers:** searchable list, saved location (edit/clear), recent orders, new order for this customer.
 - **Shop switcher** in the menu when the user owns more than one shop.
 
 ### 7.9 Platform admin `/platform`
+
 Only users in `platform_admins`:
+
 - Shops list: name, slug, town, status, created, deliveries this month vs cap.
 - Approve, suspend, reactivate, change cap.
 - **Create shop for someone** (used for the first client): creates the tenant as `active` and sends the owner an invite email to set their password.
 
 ### 7.10 Backend jobs
+
 - **ETA fallback:** `pg_cron` every minute calls `eta-fallback` for `on_the_way` orders with stale ETAs (Mapbox Directions `driving-traffic`).
 - **Cleanup:** daily job removes `rider_positions` for riders not on a delivery; nulls stale ETAs; purges personal data from tracking responses after 24 h (handled in `track`).
 - **Usage counter:** increments per tenant per month on order creation; blocks new orders at the cap with a clear message.
@@ -265,16 +279,18 @@ order_events (                          -- append-only audit trail
 ```
 
 **RLS helpers** (`security definer`, `stable`, `search_path` pinned):
+
 - `is_member(t uuid, roles member_role[])` → caller has an active membership in `t` with one of `roles`.
 - `is_platform_admin()`.
 
 **Policies (pattern):**
+
 - Owners: `is_member(tenant_id, '{owner}')` for select/insert/update on customers, orders, order_events (insert only), rider_positions (select), memberships of their tenant, their tenant row (update limited columns via RPC).
 - Riders (select only; all writes through `rider_*` RPCs):
-    - `orders` where `rider_id = auth.uid() and is_member(tenant_id, '{rider}')`.
-    - `customers` linked to one of their open orders: `exists (select 1 from orders o where o.tenant_id = customers.tenant_id and o.customer_id = customers.id and o.rider_id = auth.uid() and o.status in ('assigned','picked_up','on_the_way')) and is_member(tenant_id, '{rider}')`. Past orders go through `rider_history`, which hides the phone after 24 h.
-    - `tenants` where `is_member(id, '{rider}')`, regardless of `status`, so the app can show the shop's name, logo, till and a paused state. Riders see the whole row; it holds nothing secret (template, cap). Column-level grants can't distinguish riders from owners, since both use the `authenticated` role.
-    - `profiles` where `id = auth.uid()` (Account screen).
+  - `orders` where `rider_id = auth.uid() and is_member(tenant_id, '{rider}')`.
+  - `customers` linked to one of their open orders: `exists (select 1 from orders o where o.tenant_id = customers.tenant_id and o.customer_id = customers.id and o.rider_id = auth.uid() and o.status in ('assigned','picked_up','on_the_way')) and is_member(tenant_id, '{rider}')`. Past orders go through `rider_history`, which hides the phone after 24 h.
+  - `tenants` where `is_member(id, '{rider}')`, regardless of `status`, so the app can show the shop's name, logo, till and a paused state. Riders see the whole row; it holds nothing secret (template, cap). Column-level grants can't distinguish riders from owners, since both use the `authenticated` role.
+  - `profiles` where `id = auth.uid()` (Account screen).
 - Realtime: `orders` is in the `supabase_realtime` publication; RLS applies, so a rider only receives changes to their own orders. A reassigned order stops matching the old rider's policy and sends them nothing; the app detects it by refetching.
 - `anon`: no table access at all.
 - Platform admin: reads all via `/platform` RPCs, never through the owner policies.
@@ -288,29 +304,31 @@ Constraints: at most one `on_the_way` order per rider per shop (partial unique i
 ## 9. API surface
 
 ### RPCs
-| RPC | Caller | Effect |
-| --- | --- | --- |
-| `create_tenant(name, slug, town, phone)` | signed-in user | Validates slug, creates `pending` tenant with `shop_code`, adds caller as owner |
-| `update_tenant_settings(tenant_id, …)` | owner | Changes allowed settings; slug change writes `tenant_slug_history` |
-| `check_slug(slug)` | anyone | Available / taken / reserved (rate-limited) |
-| `rider_shop_lookup(shop_code)` | anyone (rate-limited per IP) | Returns `{ name, logo_url, status }` for the shop, or null. Used by the rider app before sign-in to tell an unknown code from a wrong PIN and to show a paused shop. Exposes nothing beyond the public shop page |
-| `rider_mark_picked_up(order_id)` | rider | `assigned` → `picked_up` |
-| `rider_start_delivery(order_id)` | rider | → `on_the_way`; one at a time |
-| `rider_report_position(lat, lng, heading, speed, accuracy, eta_seconds, distance_m)` | rider | Upsert position for the rider's active shop; update the active order's ETA. Returns `{ order_id, status }` of the rider's latest non-final order or null, so the app stops tracking after a cancel even if Realtime missed it |
-| `rider_mark_delivered(order_id, payment_method, mpesa_code, unpaid_reason, save_lat, save_lng)` | rider | → `delivered`, payment outcome, optional saved location |
-| `rider_mark_returned(order_id, return_reason)` | rider | `on_the_way` → `returned`; sets `returned_at`, `return_reason`; deletes the rider's `rider_positions` row; writes an `order_events` row |
 
-All rider RPCs derive `tenant_id` from the rider's single active membership; they never take it as a parameter. They raise errors with stable codes the app maps to copy (in the exception's `hint` or as the message): `shop_suspended` (tenant status is `suspended`; `pending` shops still let riders sign in and see no orders), `rider_inactive` (membership inactive), `not_your_order`, `already_on_the_way`, `invalid_status`.
+| RPC                                                                                             | Caller                       | Effect                                                                                                                                                                                                                        |
+| ----------------------------------------------------------------------------------------------- | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `create_tenant(name, slug, town, phone)`                                                        | signed-in user               | Validates slug, creates `pending` tenant with `shop_code`, adds caller as owner                                                                                                                                               |
+| `update_tenant_settings(tenant_id, …)`                                                          | owner                        | Changes allowed settings; slug change writes `tenant_slug_history`                                                                                                                                                            |
+| `check_slug(slug)`                                                                              | anyone                       | Available / taken / reserved (rate-limited)                                                                                                                                                                                   |
+| `rider_shop_lookup(p_shop_code)`                                                                  | anyone (rate-limited per IP) | Returns `{ name, logo_path, status }` for the shop, or null (the app builds the logo URL from `logo_path`). Used by the rider app before sign-in to tell an unknown code from a wrong PIN and to show a paused shop. Exposes nothing beyond the public shop page              |
+| `rider_mark_picked_up(order_id)`                                                                | rider                        | `assigned` → `picked_up`                                                                                                                                                                                                      |
+| `rider_start_delivery(order_id)`                                                                | rider                        | → `on_the_way`; one at a time                                                                                                                                                                                                 |
+| `rider_report_position(lat, lng, heading, speed, accuracy, eta_seconds, distance_m)`            | rider                        | Upsert position for the rider's active shop; update the active order's ETA. Stores the position only while an order is `on_the_way`. Returns `{ order_id, status }` of the rider's most recently started order or null, so the app stops tracking after a cancel even if Realtime missed it |
+| `rider_mark_delivered(order_id, payment_method, mpesa_code, unpaid_reason, save_lat, save_lng)` | rider                        | → `delivered`, payment outcome, optional saved location                                                                                                                                                                       |
+| `rider_mark_returned(order_id, return_reason)`                                                  | rider                        | `on_the_way` → `returned`; sets `returned_at`, `return_reason`; deletes the rider's `rider_positions` row; writes an `order_events` row                                                                                       |
+
+All rider RPCs derive `tenant_id` from the rider's single active membership; they never take it as a parameter. They raise errors with stable codes the app maps to copy (in the exception's `hint` or as the message): `shop_suspended` (tenant status is `suspended`; `pending` shops still let riders sign in and see no orders), `rider_inactive` (membership inactive), `not_your_order`, `already_on_the_way`, `invalid_status`, plus `not_a_rider`, `invalid_payment`, `invalid_position`, `reason_required`, `rate_limited`.
 
 ### Edge functions
-| Function | Auth | Purpose |
-| --- | --- | --- |
-| `track` (GET `?token=&shop=`) | none | Whitelisted view of one order plus shop branding; `redirect_slug` when the slug is stale |
-| `track-set-location` (POST) | none, token | Sets destination + landmark before `on_the_way` |
-| `admin-rider` (POST) | owner JWT + `tenant_id` | `create`, `reset_pin`, `set_active`; checks `is_member(tenant_id, '{owner}')`; builds the synthetic email from the shop code. `set_active(false)` sets the membership inactive **and** bans the auth user (`ban_duration` long, e.g. `876000h`); `set_active(true)` clears the ban. Safe because riders have one auth user per shop |
-| `invite-owner` (POST) | owner or platform admin | Email invite to join a shop as co-owner |
-| `platform` (POST) | platform admin | `approve`, `suspend`, `reactivate`, `set_cap`, `create_shop_for` |
-| `eta-fallback` | cron secret | Recomputes stale ETAs |
+
+| Function                      | Auth                    | Purpose                                                                                                                                                                                                                                                                                                                             |
+| ----------------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `track` (GET `?token=&shop=`) | none                    | Whitelisted view of one order plus shop branding; `redirect_slug` when the slug is stale                                                                                                                                                                                                                                            |
+| `track-set-location` (POST)   | none, token             | Sets destination + landmark before `on_the_way`                                                                                                                                                                                                                                                                                     |
+| `admin-rider` (POST)          | owner JWT + `tenant_id` | `create`, `reset_pin`, `set_active`; checks `is_member(tenant_id, '{owner}')`; builds the synthetic email from the shop code. `set_active(false)` sets the membership inactive **and** bans the auth user (`ban_duration` long, e.g. `876000h`); `set_active(true)` clears the ban. Safe because riders have one auth user per shop |
+| `invite-owner` (POST)         | owner or platform admin | Email invite to join a shop as co-owner                                                                                                                                                                                                                                                                                             |
+| `platform` (POST)             | platform admin          | `approve`, `suspend`, `reactivate`, `set_cap`, `create_shop_for`                                                                                                                                                                                                                                                                    |
+| `eta-fallback`                | cron secret             | Recomputes stale ETAs                                                                                                                                                                                                                                                                                                               |
 
 `track` response adds a `shop` object: `{ "name", "slug", "logo_url", "phone", "whatsapp", "till_number", "paybill_number", "paybill_account" }`. Nothing else beyond the fields listed in the earlier design (status, first name, items, payment, destination, rider while on the way, position, ETA).
 
@@ -334,7 +352,7 @@ Rate limits: per-IP on `track`, `track-set-location`, `check_slug` and `rider_sh
 - [ ] A rider signs in with shop code + phone + PIN; the same phone can be a rider at two shops with separate PINs.
 - [ ] The rider app can tell apart an unknown shop code, a suspended shop, a wrong phone or PIN, and a deactivated rider; a deactivated rider's existing session stops working.
 - [ ] A rider can read their own shop row, their profile, and the customers of their open orders, and nothing else beyond their orders; Realtime on `orders` delivers only their own orders.
-- [ ] A rider can mark an `on_the_way` order returned; the owner sees it under needs attention and Payments until *Items received*, and the tracking page shows the not-completed state.
+- [ ] A rider can mark an `on_the_way` order returned; the owner sees it under needs attention and Payments until _Items received_, and the tracking page shows the not-completed state.
 - [ ] Tracking page is branded with the shop and shows its till; a wrong slug with a valid token redirects to the right URL.
 - [ ] Usage cap blocks new orders with a clear message; usage shows in settings.
 - [ ] All single-shop criteria still hold (two-tap location, live map and ETA, rider phone only while on the way, no personal data after 24 h, payments reconciliation, audit timeline, nightly backups).

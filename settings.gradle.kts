@@ -21,6 +21,8 @@ dependencyResolutionManagement {
                 includeGroupAndSubgroups("androidx")
                 includeGroupAndSubgroups("com.android")
                 includeGroupAndSubgroups("com.google")
+                // The Navigation SDK depends on Cronet from Google's Maven.
+                includeGroupAndSubgroups("org.chromium")
             }
         }
         mavenCentral()

@@ -62,14 +62,14 @@ What a signed-in rider can read directly (RLS, `select` only):
 Realtime: subscribe to `postgres_changes` on `orders` (RLS applies). A reassigned order stops matching the rider's policy, so Realtime sends nothing for it: refetch the list on every event, on resume and on pull to refresh, and treat an order that disappears as reassigned.
 
 RPCs the app calls:
-- `rider_shop_lookup(shop_code)` — callable before sign-in. Returns `{ name, logo_url, status }` or null for an unknown code. Rate-limited.
+- `rider_shop_lookup(p_shop_code)` — callable before sign-in (anon). Returns `{ name, logo_path, status }` or null for an unknown code. Build the logo URL with Storage `publicUrl` on bucket `logos`. Rate-limited per IP (`rate_limited`).
 - `rider_mark_picked_up(order_id)`
 - `rider_start_delivery(order_id)` → `on_the_way`; fails if the rider already has another `on_the_way` order.
-- `rider_report_position(lat, lng, heading, speed, accuracy, eta_seconds?, distance_m?)` — upserts the rider's single row in `rider_positions` and, when ETA is provided, updates the active order's ETA. Returns `{ order_id, status }` for the rider's active order (or null); stop tracking when the status is no longer `on_the_way`.
+- `rider_report_position(lat, lng, heading, speed, accuracy, eta_seconds?, distance_m?)` — upserts the rider's single row in `rider_positions` and, when ETA is provided, updates the active order's ETA. The position is stored only while an order is `on_the_way`. Returns `{ order_id, status }` of the rider's most recently started order (or null); stop tracking when the status is no longer `on_the_way`.
 - `rider_mark_delivered(order_id, payment_method?, mpesa_code?, unpaid_reason?, save_lat?, save_lng?)` — `payment_method` is `cash` or `mpesa` for pay-on-delivery orders, null for prepaid; `unpaid_reason` when the customer couldn't pay and keeps the items (delivered-unpaid).
 - `rider_mark_returned(order_id, return_reason)` — `on_the_way` → `returned`: the customer couldn't pay or refused the items and the rider is bringing them back. Stops tracking.
 
-Rider RPCs fail with error codes the app maps to copy: `shop_suspended`, `rider_inactive`, `not_your_order`, `already_on_the_way`, `invalid_status`.
+Rider RPCs fail with a stable code in the Postgres error's `message` and `hint`, which the app maps to copy: `shop_suspended`, `rider_inactive`, `not_a_rider`, `not_your_order`, `already_on_the_way`, `invalid_status`, `invalid_payment`, `invalid_position`, `reason_required`, `rate_limited`. Parameter names are as written here (`order_id`, `lat`, …); `rider_shop_lookup` takes `p_shop_code`.
 
 Rider auth: the rider types **shop code + phone number + 6-digit PIN**. Accounts use a synthetic email built from the normalised phone and the lowercased shop code (`254712345678@k7q2mx.riders.invalid`). Sign-in flow:
 1. Uppercase and validate the 6-character shop code, then call `rider_shop_lookup`. Null → "We couldn't find that shop code." `suspended` → "Your shop's account is paused. Talk to the shop owner." Otherwise show the shop's name and logo on the sign-in screen.
@@ -102,7 +102,7 @@ Edge functions (`track`, `track-set-location`, `admin-rider`, `eta-fallback`) be
 
 ## Secrets
 
-Supabase URL + anon key and the Google Maps/Navigation API key come from `local.properties` via the Secrets Gradle Plugin or BuildConfig. Never commit keys. Restrict the Google key to the app's package name and SHA-1.
+Supabase URL + anon key (`supabase.url`, `supabase.anonKey`) and the Google Maps/Navigation API key (`maps.apiKey`, empty means in-app navigation is off and Start delivery opens Google Maps) come from `local.properties` via the Secrets Gradle Plugin or BuildConfig. Never commit keys. Restrict the Google key to the app's package name and SHA-1.
 
 ## Commands
 
