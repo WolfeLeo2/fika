@@ -19,6 +19,7 @@ import com.wolfeleo2.fika.orders.OrdersRepository
 import com.wolfeleo2.fika.orders.ProfileRepository
 import com.wolfeleo2.fika.orders.ShopRepository
 import com.wolfeleo2.fika.orders.TodayViewModel
+import com.wolfeleo2.fika.settings.ThemeSettings
 import com.wolfeleo2.fika.tracking.NavigationProgress
 import com.wolfeleo2.fika.tracking.TrackingRepository
 import kotlin.time.Clock
@@ -47,6 +48,7 @@ fun sharedModule(config: SupabaseConfig) = module {
     viewModelOf(::MainViewModel)
     single<TrackingRepository> { SupabaseTrackingRepository(get()) }
     single { NavigationProgress() }
+    single { ThemeSettings(get()) }
     viewModel { (orderId: String) -> OrderDetailViewModel(orderId, get(), get()) }
     single<ShopRepository> { SupabaseShopRepository(get()) }
     viewModelOf(::DeliveredViewModel)

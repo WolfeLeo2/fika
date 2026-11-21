@@ -23,6 +23,8 @@ dependencies {
     coreLibraryDesugaring(libs.desugar.jdk.libs.nio)
     // FusedLocationProviderClient for the foreground tracking service (CLAUDE.md); not available in AndroidX itself.
     implementation(libs.play.services.location)
+    // The turn-by-turn feed service below reads the SDK's model classes, which riderApp does not re-export.
+    implementation(libs.google.navigation)
 
     implementation(libs.compose.uiToolingPreview)
     debugImplementation(libs.compose.uiTooling)

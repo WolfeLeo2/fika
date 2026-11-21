@@ -14,12 +14,13 @@ import com.wolfeleo2.fika.auth.AuthRepository
 import com.wolfeleo2.fika.auth.SessionState
 import com.wolfeleo2.fika.auth.SignInRoute
 import com.wolfeleo2.fika.theme.FikaTheme
+import com.wolfeleo2.fika.theme.rememberDarkTheme
 import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun App() {
-    FikaTheme {
+    FikaTheme(darkTheme = rememberDarkTheme()) {
         Surface(Modifier.fillMaxSize()) {
             val session by koinInject<AuthRepository>().sessionState.collectAsState(SessionState.Loading)
             when (session) {

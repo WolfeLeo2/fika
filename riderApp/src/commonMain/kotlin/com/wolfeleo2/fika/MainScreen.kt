@@ -68,9 +68,11 @@ import com.wolfeleo2.fika.orders.MainViewModel
 import com.wolfeleo2.fika.orders.Order
 import com.wolfeleo2.fika.orders.TodayViewModel
 import com.wolfeleo2.fika.orders.displayName
+import com.wolfeleo2.fika.orders.endNavigationSession
 import com.wolfeleo2.fika.orders.etaMinutes
 import com.wolfeleo2.fika.orders.firstName
 import com.wolfeleo2.fika.orders.initials
+import com.wolfeleo2.fika.settings.ThemeSettings
 import com.wolfeleo2.fika.theme.EmphasizedAccelerate
 import com.wolfeleo2.fika.theme.EmphasizedDecelerate
 import com.wolfeleo2.fika.theme.FikaTheme
@@ -78,6 +80,7 @@ import com.wolfeleo2.fika.today.TodayRoute
 import fika.riderapp.generated.resources.*
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
 private enum class Tab(val label: StringResource, val icon: ImageVector, val selectedIcon: ImageVector) {
@@ -105,6 +108,8 @@ fun MainScreen(
     val name by viewModel.riderName.collectAsStateWithLifecycle()
     val shop by viewModel.shop.collectAsStateWithLifecycle()
     val today by todayViewModel.state.collectAsStateWithLifecycle()
+    val themeSettings = koinInject<ThemeSettings>()
+    val themeMode by themeSettings.mode.collectAsStateWithLifecycle()
     val activeOrder = today.onTheWay.takeIf { tab != Tab.Today }
 
     // Back from any other tab goes to Today first, as Android users expect, instead of leaving the app.
@@ -137,7 +142,7 @@ fun MainScreen(
         ) { current ->
             when (current) {
                 Tab.Today -> TodayRoute(firstName(name), onOpenOrder, contentPadding, todayViewModel)
-                Tab.Account -> AccountScreen(name, shop, onSignOut = viewModel::signOut, contentPadding = contentPadding)
+                Tab.Account -> AccountScreen(name, shop, themeMode, themeSettings::set, onSignOut = { endNavigationSession(); viewModel.signOut() }, contentPadding = contentPadding)
             }
         }
         TopScrim(insets.calculateTopPadding(), Modifier.align(Alignment.TopCenter))

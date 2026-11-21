@@ -5,6 +5,7 @@ import com.wolfeleo2.fika.di.SupabaseConfig
 import com.wolfeleo2.fika.di.sharedModule
 import org.koin.android.ext.koin.androidContext
 import com.wolfeleo2.fika.auth.ShopCodeStore
+import com.wolfeleo2.fika.settings.ThemeStore
 import com.wolfeleo2.fika.tracking.LocationTracker
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
@@ -18,6 +19,7 @@ class FikaApplication : Application() {
                 sharedModule(SupabaseConfig(BuildConfig.SUPABASE_URL, BuildConfig.SUPABASE_ANON_KEY)),
                 module {
                     single<ShopCodeStore> { PrefsShopCodeStore(get()) }
+                    single<ThemeStore> { PrefsThemeStore(get()) }
                     single<LocationTracker> { AndroidLocationTracker(androidContext()) }
                 },
             )

@@ -10,9 +10,14 @@ actual fun InAppNavigationView(
     destLat: Double,
     destLng: Double,
     title: String,
+    darkTheme: Boolean,
+    overviewRequest: Int,
     onRemaining: (seconds: Int, meters: Int) -> Unit,
+    onArrived: () -> Unit,
     onUnavailable: () -> Unit,
     modifier: Modifier,
 ) {
     LaunchedEffect(Unit) { onUnavailable() }
 }
+
+actual fun endNavigationSession() = Unit

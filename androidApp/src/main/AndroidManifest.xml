@@ -37,6 +37,11 @@
             </intent-filter>
         </activity>
 
+        <!-- Receives the Navigation SDK's turn feed in-process while in-app navigation runs. -->
+        <service
+            android:name=".NavInfoService"
+            android:exported="false" />
+
         <service
             android:name=".LocationService"
             android:exported="false"

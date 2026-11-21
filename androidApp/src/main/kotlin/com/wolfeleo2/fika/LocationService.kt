@@ -16,6 +16,7 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
+import com.wolfeleo2.fika.orders.NavigationSession
 import com.wolfeleo2.fika.tracking.LocationTracker
 import com.wolfeleo2.fika.tracking.NavigationProgress
 import com.wolfeleo2.fika.tracking.Ping
@@ -75,6 +76,8 @@ class LocationService : Service() {
     }
 
     override fun onDestroy() {
+        // Tracking stops when the order leaves on_the_way, which is also when the navigation session must end.
+        NavigationSession.end()
         stopUpdates()
         scope.cancel()
         tracker.running.value = false

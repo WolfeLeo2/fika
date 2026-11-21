@@ -30,6 +30,7 @@ import com.wolfeleo2.fika.theme.EmphasizedDecelerate
 import com.wolfeleo2.fika.orders.CollectRoute
 import com.wolfeleo2.fika.orders.DeliveredRoute
 import com.wolfeleo2.fika.orders.NavigationRoute
+import com.wolfeleo2.fika.orders.endNavigationSession
 import com.wolfeleo2.fika.orders.OrderDetailRoute
 import com.wolfeleo2.fika.orders.PaymentOutcome
 import com.wolfeleo2.fika.orders.timeLabel
@@ -133,10 +134,12 @@ fun AppNav() {
                     orderId = key.id,
                     onClose = back,
                     onDelivered = { d ->
+                        endNavigationSession()
                         home()
                         backStack.add(DeliveredKey(d.customerName, d.outcome.name, d.amountKes, timeLabel(d.at)))
                     },
                     onReturned = {
+                        endNavigationSession()
                         home()
                         scope.launch { snackbar.showSnackbar(getString(Res.string.returned_message)) }
                     },
