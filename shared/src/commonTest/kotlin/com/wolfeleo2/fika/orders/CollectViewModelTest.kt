@@ -27,7 +27,7 @@ private class Repo(var order: Order?) : OrdersRepository {
     var returned: String? = null
     var result: Result<Unit> = Result.success(Unit)
     override suspend fun openOrders() = Result.success(listOfNotNull(order))
-    override suspend fun closedSince(since: Instant) = Result.success(emptyList<ClosedOrder>())
+    override suspend fun closedSince(since: Instant, until: Instant?) = Result.success(emptyList<ClosedOrder>())
     override fun changes(): Flow<Unit> = emptyFlow()
     override suspend fun statusOf(orderId: String) = Result.success<OrderStatus?>(null)
     override suspend fun markPickedUp(orderId: String) = result

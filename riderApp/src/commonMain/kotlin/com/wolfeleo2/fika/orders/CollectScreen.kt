@@ -60,11 +60,13 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.adamglin.PhosphorIcons
 import com.adamglin.phosphoricons.Duotone
+import com.adamglin.phosphoricons.Regular
 import com.adamglin.phosphoricons.duotone.CheckCircle
 import com.adamglin.phosphoricons.duotone.DeviceMobile
 import com.adamglin.phosphoricons.duotone.Money
 import com.adamglin.phosphoricons.duotone.Phone
 import com.adamglin.phosphoricons.duotone.XCircle
+import com.adamglin.phosphoricons.regular.CaretLeft
 import com.wolfeleo2.fika.auth.FieldBox
 import com.wolfeleo2.fika.theme.FikaTheme
 import fika.riderapp.generated.resources.*
@@ -141,7 +143,7 @@ fun CollectScreen(
                         modifier = Modifier.size(48.dp),
                     ) {
                         Icon(
-                            PhosphorIcons.Duotone.XCircle,
+                            PhosphorIcons.Regular.CaretLeft,
                             contentDescription = stringResource(Res.string.close),
                             tint = MaterialTheme.colorScheme.onSurface,
                         )
@@ -237,14 +239,13 @@ private fun AmountCard(order: Order) {
                 Text(
                     text = "KES",
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                    color = scheme.tertiary,
                     modifier = Modifier.padding(bottom = 6.dp),
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
                     text = formatKes(amount).removePrefix("KES "),
                     style = MaterialTheme.typography.displayLarge.copy(fontWeight = FontWeight.Bold),
-                    color = scheme.onSurface,
+                    color = scheme.tertiary,
                 )
             }
 

@@ -13,6 +13,7 @@ import com.wolfeleo2.fika.data.SupabaseShopRepository
 import com.wolfeleo2.fika.data.SupabaseTrackingRepository
 import com.wolfeleo2.fika.orders.CollectViewModel
 import com.wolfeleo2.fika.orders.DeliveredViewModel
+import com.wolfeleo2.fika.orders.HistoryViewModel
 import com.wolfeleo2.fika.orders.MainViewModel
 import com.wolfeleo2.fika.orders.OrderDetailViewModel
 import com.wolfeleo2.fika.orders.OrdersRepository
@@ -45,6 +46,7 @@ fun sharedModule(config: SupabaseConfig) = module {
     single<OrdersRepository> { get<SupabaseOrdersRepository>() }
     single<ProfileRepository> { get<SupabaseOrdersRepository>() }
     viewModelOf(::TodayViewModel)
+    viewModelOf(::HistoryViewModel)
     viewModelOf(::MainViewModel)
     single<TrackingRepository> { SupabaseTrackingRepository(get()) }
     single { NavigationProgress() }

@@ -26,7 +26,7 @@ private class FakeRepo : OrdersRepository {
     var actionResult: Result<Unit> = Result.success(Unit)
     val calls = mutableListOf<String>()
     override suspend fun openOrders() = Result.success(open)
-    override suspend fun closedSince(since: Instant) = Result.success(emptyList<ClosedOrder>())
+    override suspend fun closedSince(since: Instant, until: Instant?) = Result.success(emptyList<ClosedOrder>())
     override fun changes(): Flow<Unit> = emptyFlow()
     override suspend fun statusOf(orderId: String) = Result.success(status)
     override suspend fun markPickedUp(orderId: String) = actionResult.also { calls += "pickedUp:$orderId" }

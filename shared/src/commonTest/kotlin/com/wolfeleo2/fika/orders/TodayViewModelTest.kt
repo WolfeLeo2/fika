@@ -26,7 +26,7 @@ private class FakeOrders : OrdersRepository, ProfileRepository {
     val events = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     var openCalls = 0
     override suspend fun openOrders() = open.also { openCalls++ }
-    override suspend fun closedSince(since: Instant) = closed
+    override suspend fun closedSince(since: Instant, until: Instant?) = closed
     override fun changes(): Flow<Unit> = events
     override suspend fun statusOf(orderId: String): Result<OrderStatus?> = Result.success(null)
     override suspend fun markPickedUp(orderId: String): Result<Unit> = Result.success(Unit)

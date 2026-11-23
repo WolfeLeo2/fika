@@ -26,7 +26,7 @@ data class TodayUiState(
     val toDeliver: Int get() = orders.size
     val toCollectKes: Int get() = orders.sumOf { it.collectKes ?: 0 }
     val deliveredCount: Int get() = closedToday.count { it.status == OrderStatus.Delivered }
-    /** Nothing open to deliver (delivered orders may still be listed below). */
+    /** Nothing open to deliver (used to distinguish "All caught up" from "No deliveries yet"). */
     val isEmpty: Boolean get() = !loading && orders.isEmpty()
 }
 

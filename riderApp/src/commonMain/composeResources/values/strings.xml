@@ -24,8 +24,13 @@
     <string name="error_invalid_credentials">Wrong phone number or PIN.</string>
     <string name="error_user_banned">Your rider account is turned off. Talk to the shop owner.</string>
     <string name="error_unknown">Something went wrong. Try again.</string>
+
+    <!-- Navigation -->
     <string name="nav_today">Today</string>
+    <string name="nav_history">History</string>
     <string name="nav_account">Account</string>
+
+    <!-- Today screen -->
     <string name="greeting_morning">Good morning</string>
     <string name="greeting_afternoon">Good afternoon</string>
     <string name="greeting_evening">Good evening</string>
@@ -42,6 +47,50 @@
     <string name="action_open_delivery">Open delivery</string>
     <string name="a11y_expanded">Expanded</string>
     <string name="a11y_collapsed">Collapsed</string>
+
+    <!-- History Screen -->
+    <string name="history_filter_all">All</string>
+    <string name="history_filter_cash">Cash</string>
+    <string name="history_filter_mpesa">M-Pesa</string>
+    <string name="history_filter_prepaid">Prepaid</string>
+    <string name="history_title">History</string>
+    <string name="history_stat_delivered">Delivered</string>
+    <string name="history_stat_cash">Cash</string>
+    <string name="history_stat_mpesa">M-Pesa</string>
+    <string name="history_delivered_summary">%1$d deliveries</string>
+    <string name="history_no_cash">No cash to turn in</string>
+    <string name="history_empty_filter_title">No matching deliveries</string>
+    <string name="history_empty_title">No deliveries yet</string>
+    <string name="history_empty_hint">Completed stops for today will show up here.</string>
+    <string name="history_period_today">Today</string>
+    <string name="history_period_week">7 days</string>
+    <string name="history_period_custom">Custom</string>
+    <string name="history_custom_title">Custom time frame</string>
+    <string name="history_custom_apply">Apply timeframe</string>
+    <string name="history_range_from">From</string>
+    <string name="history_range_to">To</string>
+    <string name="history_range_invalid">Start date must be on or before end date</string>
+    <string name="history_field_month">Month</string>
+    <string name="history_field_day">Day</string>
+    <string name="history_field_year">Year</string>
+    <string-array name="months_short">
+        <item>Jan</item>
+        <item>Feb</item>
+        <item>Mar</item>
+        <item>Apr</item>
+        <item>May</item>
+        <item>Jun</item>
+        <item>Jul</item>
+        <item>Aug</item>
+        <item>Sep</item>
+        <item>Oct</item>
+        <item>Nov</item>
+        <item>Dec</item>
+    </string-array>
+    <string name="history_custom_days">%1$d days</string>
+    <string name="history_empty_period_hint">No deliveries for this period</string>
+
+
     <string name="detail_title">Order details</string>
     <string name="detail_items">Items</string>
     <string name="detail_payment">Payment</string>
@@ -72,7 +121,7 @@
     <string name="cash_title">Cash payment</string>
     <string name="order_code">Order %1$s</string>
     <string name="status_on_the_way">On the way</string>
-    <string name="nav_arrived_title">You\'ve arrived</string>
+    <string name="nav_arrived_title">You've arrived</string>
     <string name="nav_rerouting">Rerouting</string>
     <string name="nav_starting">Finding your route</string>
     <string name="nav_destination">Destination</string>

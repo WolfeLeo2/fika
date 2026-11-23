@@ -27,6 +27,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LoadingIndicator
+import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -46,16 +47,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.material3.toShape
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.delay
 import com.adamglin.PhosphorIcons
+import com.adamglin.phosphoricons.Bold
 import com.adamglin.phosphoricons.Duotone
 import com.adamglin.phosphoricons.Fill
 import com.adamglin.phosphoricons.Regular
+import com.adamglin.phosphoricons.bold.Check
 import com.adamglin.phosphoricons.duotone.GpsSlash
 import com.adamglin.phosphoricons.duotone.NavigationArrow
 import com.adamglin.phosphoricons.duotone.Notepad
@@ -69,10 +74,10 @@ import com.wolfeleo2.fika.tracking.LocationReasonDialog
 import com.wolfeleo2.fika.tracking.TrackingBanner
 import com.wolfeleo2.fika.tracking.rememberTrackingPermissions
 import fika.riderapp.generated.resources.*
-import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun OrderDetailRoute(
@@ -90,6 +95,7 @@ fun OrderDetailRoute(
     // A started delivery opens in-app navigation, after the one-time battery question if it is due.
     LaunchedEffect(state.justStarted) {
         if (!state.justStarted) return@LaunchedEffect
+        delay(250.milliseconds)
         viewModel.onStartedHandled()
         if (permissions.shouldAskBatteryExemption()) askBattery = true else onNavigate()
     }
@@ -295,9 +301,11 @@ private fun CustomerHeader(order: Order, onCall: () -> Unit, onDirections: (() -
 }
 
 /** Three steps toward the customer: assigned, picked up, on the way. */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun StatusProgress(status: OrderStatus, modifier: Modifier = Modifier) {
     val scheme = MaterialTheme.colorScheme
+    val green = FikaTheme.success
     val step = when (status) {
         OrderStatus.Assigned -> 1
         OrderStatus.PickedUp -> 2
@@ -314,15 +322,56 @@ private fun StatusProgress(status: OrderStatus, modifier: Modifier = Modifier) {
         },
     )
     val description = stringResource(Res.string.detail_step, label, step)
-    Column(modifier.semantics(mergeDescendants = true) { contentDescription = description }, verticalArrangement = Arrangement.spacedBy(FikaTheme.spacing.xs)) {
-        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+
+    Column(
+        modifier = modifier.semantics(mergeDescendants = true) { contentDescription = description },
+        verticalArrangement = Arrangement.spacedBy(FikaTheme.spacing.xs),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
             repeat(3) { index ->
+                val isCompleted = index < step
                 val color by animateColorAsState(
-                    if (index < step) scheme.primary else scheme.surfaceContainerHighest,
+                    if (isCompleted) green.success else scheme.surfaceContainerHighest,
                     animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec(),
                     label = "step-$index",
                 )
-                Box(Modifier.weight(1f).height(6.dp).background(color, CircleShape))
+                Row(
+                    modifier = Modifier.weight(1f),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(0.dp),
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(6.dp)
+                            .background(color, CircleShape),
+                    )
+                    Box(
+                        modifier = Modifier
+                            .size(22.dp)
+                            .background(color, MaterialShapes.Cookie9Sided.toShape()),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        if (isCompleted) {
+                            Icon(
+                                imageVector = PhosphorIcons.Bold.Check,
+                                contentDescription = null,
+                                modifier = Modifier.size(13.dp),
+                                tint = green.onSuccess,
+                            )
+                        }
+                    }
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(6.dp)
+                            .background(color, CircleShape),
+                    )
+                }
             }
         }
         Text(label, style = MaterialTheme.typography.labelLarge, color = scheme.onSurfaceVariant)

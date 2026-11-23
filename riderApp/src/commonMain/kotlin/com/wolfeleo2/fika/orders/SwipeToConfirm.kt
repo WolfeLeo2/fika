@@ -30,7 +30,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
@@ -97,8 +96,10 @@ internal fun SwipeToConfirm(
         if (!live) return
         confirmed = true
         haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-        scope.launch { offset.animateTo(maxOffset, spec) }
-        onConfirm()
+        scope.launch {
+            offset.animateTo(maxOffset, spec)
+            onConfirm()
+        }
     }
 
     // Back to the start whenever the action isn't in flight, for example after an error or a declined prompt.
@@ -115,8 +116,16 @@ internal fun SwipeToConfirm(
             .height(Thumb + Pad * 2)
             .clip(CircleShape)
             .background(scheme.surfaceContainerHighest)
-            // The fill reaches just past the thumb's centre, so it reads as the thumb pulling colour along.
-            .drawBehind { drawRect(green.success, size = Size(padPx + offset.value + thumbPx / 2, size.height)) }
+            .drawBehind {
+                val activeWidth = if (progress > 0f) padPx + offset.value + thumbPx else 0f
+                if (activeWidth > 0f) {
+                    drawRoundRect(
+                        color = green.success,
+                        size = Size(activeWidth, size.height),
+                        cornerRadius = androidx.compose.ui.geometry.CornerRadius(size.height / 2, size.height / 2),
+                    )
+                }
+            }
             .onSizeChanged { trackPx = it.width }
             .semantics(mergeDescendants = true) {
                 role = Role.Button
@@ -144,7 +153,8 @@ internal fun SwipeToConfirm(
                 .background(
                     when {
                         !enabled -> scheme.outline
-                        else -> lerp(scheme.primary, green.onSuccess, progress)
+                        confirmed -> green.success
+                        else -> scheme.primary
                     },
                     CircleShape,
                 )
@@ -165,13 +175,13 @@ internal fun SwipeToConfirm(
             contentAlignment = Alignment.Center,
         ) {
             when {
-                busy -> LoadingIndicator(Modifier.size(32.dp), color = green.success)
-                confirmed -> Icon(PhosphorIcons.Duotone.Check, null, Modifier.size(28.dp), tint = green.success)
+                busy -> LoadingIndicator(Modifier.size(32.dp), color = green.onSuccess)
+                confirmed -> Icon(PhosphorIcons.Duotone.Check, null, Modifier.size(28.dp), tint = green.onSuccess)
                 else -> Icon(
                     PhosphorIcons.Duotone.PersonSimpleBike,
                     contentDescription = null,
                     modifier = Modifier.size(28.dp),
-                    tint = if (enabled) lerp(scheme.onPrimary, green.success, progress) else scheme.surface,
+                    tint = if (enabled) scheme.onPrimary else scheme.surface,
                 )
             }
         }

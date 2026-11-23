@@ -1,6 +1,11 @@
 package com.wolfeleo2.fika.theme
 
+import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.ListItemShapes
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.Dp
@@ -31,3 +36,20 @@ data class FikaShapes(
 )
 
 val LocalFikaShapes = staticCompositionLocalOf { FikaShapes() }
+
+/**
+ * Custom wrapper around [ListItemDefaults.segmentedShapes] to fix M3 behavior where
+ * count == 1 returns 4dp corners instead of full 16dp container corners.
+ */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+fun segmentedShapes(index: Int, count: Int): ListItemShapes {
+    val defaultShapes = ListItemDefaults.shapes()
+    if (count == 1) {
+        val baseShape = defaultShapes.shape
+        if (baseShape is CornerBasedShape) {
+            return defaultShapes.copy(shape = RoundedCornerShape(16.dp))
+        }
+    }
+    return ListItemDefaults.segmentedShapes(index, count, defaultShapes)
+}

@@ -8,7 +8,8 @@ interface OrdersRepository {
     suspend fun openOrders(): Result<List<Order>>
 
     /** Delivered, returned and cancelled orders closed at or after [since], newest first. */
-    suspend fun closedSince(since: Instant): Result<List<ClosedOrder>>
+    /** Closed orders with `since <= closed_at < until` (no upper bound when [until] is null). */
+    suspend fun closedSince(since: Instant, until: Instant? = null): Result<List<ClosedOrder>>
 
     /**
      * Emits on every change to the rider's orders. A reassigned order sends nothing, so callers

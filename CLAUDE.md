@@ -95,7 +95,7 @@ Edge functions (`track`, `track-set-location`, `admin-rider`, `eta-fallback`) be
 - Big tap targets and high contrast: riders use the app outdoors, one-handed, on a motorbike stop.
 - Typography: **Google Sans Flex** (variable, SIL OFL), bundled in Compose resources and set as the typography of `MaterialExpressiveTheme`. Display text and key numbers (ETA, KES amounts) use a wide width and heavy weight with full roundness (`ROND` 100); body text stays at normal width.
 - English only for v1. All user-facing strings in Compose resources, not hardcoded.
-- **Icons: Material Symbols, Rounded style only.** Import the needed symbols as vector drawables (Google Fonts icons page, Android export) into Compose resources. Outlined (FILL 0) by default, filled (FILL 1) for the selected navigation item and the near_me/location_on markers. No other icon set (no Lucide, Feather or Material Icons legacy).
+- **Icons: Phosphor** via `com.adamglin:phosphor-icons` (`PhosphorIcons`, Duotone style by default). No other icon set (no Material Symbols, Lucide, Feather or Material Icons legacy).
 - **Never use middots (·) in UI copy.** Use line breaks, commas or separate text elements.
 - Money is KES, integers, formatted `KES 1,500`.
 - Times shown in Africa/Nairobi.

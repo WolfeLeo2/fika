@@ -6,6 +6,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import fika.riderapp.generated.resources.Res
 import fika.riderapp.generated.resources.google_sans_flex
 import org.jetbrains.compose.resources.Font
@@ -29,9 +30,9 @@ private fun displayFamily(): FontFamily = FontFamily(
         Res.font.google_sans_flex,
         weight = FontWeight.Black,
         variationSettings = FontVariation.Settings(
-            FontVariation.weight(900),
-            FontVariation.width(125f),
-            FontVariation.Setting("ROND", 100f),
+            FontVariation.weight(800),
+            FontVariation.opticalSizing(12.sp)
+
         ),
     ),
 )

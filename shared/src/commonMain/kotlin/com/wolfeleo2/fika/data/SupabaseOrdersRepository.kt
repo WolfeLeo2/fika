@@ -122,12 +122,13 @@ class SupabaseOrdersRepository(private val supabase: SupabaseClient) : OrdersRep
             }
     }
 
-    override suspend fun closedSince(since: Instant): Result<List<ClosedOrder>> = result {
+    override suspend fun closedSince(since: Instant, until: Instant?): Result<List<ClosedOrder>> = result {
         supabase.from("rider_history")
             .select(Columns.raw("id, status, customer_first_name, landmark, payment_mode, payment_status, payment_method, amount_kes")) {
                 filter {
                     isIn("status", CLOSED)
                     gte("closed_at", since.toString())
+                    until?.let { lt("closed_at", it.toString()) }
                 }
                 order("closed_at", SortOrder.DESCENDING)
             }
